@@ -71,7 +71,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description: SITE.description,
-    images: [pageUrl("/og.png")],
+    images: [
+      {
+        url: pageUrl("/og.png"),
+        width: 1200,
+        height: 630,
+        alt: "GIGWIRE — somebody's bar needs a band tonight",
+      },
+    ],
   },
   robots: {
     index: true,

@@ -1,4 +1,4 @@
-:HL["/Gigwire/_next/static/chunks/23aq9p_83ann_.css","style"]
+:HL["/Gigwire/_next/static/chunks/3wcgbkqpr4yxa.css","style"]
 :HL["/Gigwire/_next/static/media/0c89a48fa5027cee-s.p.2cyn07wtgehh0.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Gigwire/_next/static/media/5e4d537aaa9e154b-s.p.1ewykk74tw0il.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Gigwire/_next/static/media/7ebf22b5a21034f8-s.p.3j3877k49yy0l.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
@@ -9,4 +9,4 @@
 3:[["children",{"s":"__PAGE__","h":160}]]
 2:[["children",{"s":{"n":"id","t":"d","k":"4","s":[]},"h":96,"c":"$Q3"}]]
 1:[["children",{"s":"gigs","h":64,"c":"$Q2"}]]
-0:{"b":"Z5xs9yEy1czybmrSX6vOj","t":{"t":{"s":"","h":16,"c":"$Q1"}}}
+0:{"b":"ovjRvdIZYkW4In3S8jn6O","t":{"t":{"s":"","h":16,"c":"$Q1"}}}
