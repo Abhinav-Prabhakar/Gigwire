@@ -77,12 +77,13 @@ export function GigCard({
   const d = formatGigDate(gig.gigDate);
   const rel = relativeDay(gig.gigDate);
   const perks = perksFor(gig);
+  const setsLabel = `${gig.setsCount} ${gig.setsCount === 1 ? "set" : "sets"}`;
+  const unitLabel =
+    gig.payUnit === "flat" ? `flat · ${setsLabel}` : gig.payUnit === "hour" ? `hourly · ${setsLabel}` : setsLabel;
 
   return (
     <article
-      className={`paper-grain group relative flex flex-col border-[3px] border-ink bg-paper-2 shadow-hard transition duration-200 hover:-translate-y-1 hover:shadow-hard-lg ${
-        teaser ? "bg-butter" : ""
-      }`}
+      className="paper-grain group relative flex min-w-0 flex-col border-[3px] border-ink bg-paper-2 text-ink shadow-hard transition duration-200 hover:-translate-y-1 hover:shadow-hard-lg"
     >
       <div className="flex items-start gap-3 border-b-[3px] border-ink bg-paper-3/70 p-3.5">
         <DateBlock weekday={d.weekday} day={d.day} month={d.month} bg={teaser ? "bg-paper-2" : "bg-marigold"} />
@@ -137,14 +138,13 @@ export function GigCard({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 border-t-[3px] border-ink bg-paper-3/80 px-3.5 py-2.5">
-        <div className="flex items-baseline gap-1.5">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-t-[3px] border-ink bg-paper-3/80 px-3.5 py-2.5">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
           <span className="font-display text-[22px] leading-none text-moss">
             {formatPay(gig.payAmount, gig.payUnit).replace(/ .*/, "")}
           </span>
           <span className="whitespace-nowrap font-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-ink-soft">
-            {gig.payUnit === "flat" ? "flat" : gig.payUnit === "hour" ? "hourly" : "per set"} ·{" "}
-            {gig.setsCount} {gig.setsCount === 1 ? "set" : "sets"}
+            {unitLabel}
           </span>
         </div>
         <div className="flex items-center gap-2">

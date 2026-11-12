@@ -47,8 +47,8 @@ def main() -> None:
             page.set_viewport_size({"width": 1440, "height": height})
             page.goto(BASE + route, wait_until="networkidle")
             settle(page)
-            page.screenshot(path=str(DOCS / f"{name}.png"))
-            print("wrote screenshots/%s.png" % name)
+            page.screenshot(path=str(DOCS / f"{name}.jpg"), type="jpeg", quality=90)
+            print("wrote screenshots/%s.jpg" % name)
 
         # signed-in room desk
         page.set_viewport_size({"width": 1440, "height": 1000})
@@ -56,8 +56,8 @@ def main() -> None:
         page.get_by_role("button", name="Rohan Mehta · The Kala Ghoda Room (room)").click()
         page.wait_for_url("**/dashboard/", timeout=10000)
         settle(page)
-        page.screenshot(path=str(DOCS / "dashboard.png"))
-        print("wrote docs/dashboard.png")
+        page.screenshot(path=str(DOCS / "dashboard.jpg"), type="jpeg", quality=90)
+        print("wrote screenshots/dashboard.jpg")
 
         ctx.close()
 
@@ -68,8 +68,8 @@ def main() -> None:
         for name, route in [("mobile-home", "/"), ("mobile-gigs", "/gigs/"), ("mobile-gig", "/gigs/1/")]:
             mpage.goto(BASE + route, wait_until="networkidle")
             settle(mpage)
-            mpage.screenshot(path=str(DOCS / f"{name}.png"))
-            print("wrote screenshots/%s.png" % name)
+            mpage.screenshot(path=str(DOCS / f"{name}.jpg"), type="jpeg", quality=90)
+            print("wrote screenshots/%s.jpg" % name)
         mctx.close()
 
         browser.close()

@@ -1,4 +1,4 @@
-:HL["/Gigwire/_next/static/chunks/3wcgbkqpr4yxa.css","style"]
+:HL["/Gigwire/_next/static/chunks/0pc6rfvwmceg3.css","style"]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"/_not-found","h":64,"c":"$Q2"}]]
-0:{"b":"ovjRvdIZYkW4In3S8jn6O","t":{"t":{"s":"","h":16,"c":"$Q1"}}}
+0:{"b":"UwNlOHbotOQ2yLKWiHG8L","t":{"t":{"s":"","h":16,"c":"$Q1"}}}

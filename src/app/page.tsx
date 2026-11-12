@@ -257,7 +257,10 @@ export default async function Home() {
 
           <div className="mt-12 grid gap-7 md:grid-cols-3">
             {featured.map((row, i) => (
-              <div key={row.gig.id} style={{ transform: `rotate(${[-1.6, 1.1, -0.6][i] ?? 0}deg)` }}>
+              <div
+                key={row.gig.id}
+                className={`min-w-0 ${["md:-rotate-[1.6deg]", "md:rotate-[1.1deg]", "md:-rotate-[0.6deg]"][i] ?? ""}`}
+              >
                 <GigCard row={row} teaser />
               </div>
             ))}

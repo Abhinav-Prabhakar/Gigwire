@@ -322,8 +322,10 @@ Variants:
 - The relative sticker (`IN 3 DAYS`) is **absolute** at `-top-5 -right-3`; it must not consume layout width.
 - Title is a link with `after:absolute after:inset-0` so the whole card is clickable.
 - The bookmark sits in a 36px square button with `relative z-20` so it stays clickable above the title link.
-- Pay amount is `font-display text-[22px] text-moss`; the unit label is mono 9.5px and `whitespace-nowrap`.
+- The card always declares `text-ink` on its own light surface — it is dropped onto dark cobalt/ink bands, and inherited `text-paper-2` would make the title and date block invisible.
+- Pay amount is `font-display text-[22px] text-moss`; the unit label is mono 9.5px and `whitespace-nowrap`. It never repeats the amount suffix: `flat · 3 sets`, `hourly · 2 sets`, `4 sets`.
 - Cards lift on hover: `hover:-translate-y-1 hover:shadow-hard-lg`, 200ms.
+- Featured cards on the home cobalt band rotate at `md:` only; below that they stay square so they never clip the viewport.
 
 ### Date block — `<DateBlock>`
 
