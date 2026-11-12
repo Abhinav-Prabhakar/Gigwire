@@ -85,17 +85,25 @@ export function FlyerCard({ row, saved = false }: { row: GigRow; saved?: boolean
             </Link>
           </h3>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10.5px] font-bold uppercase tracking-[0.1em] text-ink-soft">
-            <span className="flex items-center gap-1">
-              <IconPin className="h-3.5 w-3.5" /> {gig.city}
-              {gig.state ? `, ${gig.state}` : ""}
-            </span>
-            <span className="flex items-center gap-1">
-              <IconClock className="h-3.5 w-3.5" /> {timeRange(gig.startTime, gig.endTime)}
-            </span>
-            <span className="flex items-center gap-1" title={`${row.appCount} one-sheets in`}>
-              <IconUsers className="h-3.5 w-3.5" /> {row.appCount}
-            </span>
+          <div className="mt-2 space-y-1 font-mono text-[10.5px] font-bold uppercase tracking-[0.1em] text-ink-soft">
+            <div className="flex items-center gap-2">
+              <span className="flex min-w-0 items-center gap-1">
+                <IconPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">
+                  {gig.city}
+                  {gig.state ? `, ${gig.state}` : ""}
+                </span>
+              </span>
+              <span
+                className="ml-auto flex shrink-0 items-center gap-1"
+                title={`${row.appCount} ${row.appCount === 1 ? "one-sheet" : "one-sheets"} in`}
+              >
+                <IconUsers className="h-3.5 w-3.5" /> {row.appCount}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <IconClock className="h-3.5 w-3.5 shrink-0" /> {timeRange(gig.startTime, gig.endTime)}
+            </div>
           </div>
         </div>
       </div>

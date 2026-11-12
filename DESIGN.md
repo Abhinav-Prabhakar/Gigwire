@@ -336,8 +336,8 @@ The board does not reuse the generic gig card. It uses a taller flyer with a dat
 │ SUN      │ THE KALA GHODA ROOM    [tape]   │
 │ 15       │ Friday Night House Trio —       │
 │ NOV      │ keys, bass, drums               │
-│          │ MUMBAI, MH · 9:00 PM – 12:30 AM │
-│ [TYPE]   │ 2 one-sheets in                 │
+│          │ MUMBAI, MH                  2 in │
+│ [TYPE]   │ 9:00 PM – 12:30 AM              │
 ├────────────────────────────────────────────┤
 │ [JAZZ] [SOUL / FUNK] [TRIO] [4 SLOTS]      │
 │ Two-line description…                      │
@@ -350,7 +350,7 @@ The board does not reuse the generic gig card. It uses a taller flyer with a dat
 - The date spine is a 74px marigold column with a 3px ink right border. It stretches with the header, and the night type sits at its foot as a small rotated stamp.
 - A butter tape strip sits at `-top-3 left-6`, rotated −2°. It is decoration and must not cover the venue line.
 - The relative-date sticker overlaps the top-right corner on every breakpoint. Status replaces the date when the night is `interviewing`, `filled` or `closed`.
-- The meta row carries city, time and applicant count; it may wrap to two lines on a ~280px card.
+- The meta block is two fixed rows: city (+ state) with the applicant count pushed right, then the time range. Do not let it reflow into a wrapping row — at ~280px the count orphans onto a third line.
 - The footer is a pay stub: 2px dashed top rule, two 8px ink rivets, and a paper-3/80 surface. Pay is Anton 24px moss; the unit label never repeats the amount suffix.
 - The only button in the stub is the 36px bookmark. The whole flyer is clickable through the title's `after:inset-0` overlay; do not add a second arrow button — at ~280px it forces the stub onto two rows.
 - Cards lift on hover and the title underlines in tomato.
