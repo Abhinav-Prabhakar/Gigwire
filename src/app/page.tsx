@@ -1,6 +1,13 @@
 import Link from "next/link";
-import { countGigs, getFeaturedGigs, getRecentVenues, getSpotlight, getStats } from "@/lib/data";
-import { GENRES, formatPay, formatGigDate, relativeDay } from "@/lib/format";
+import {
+  BASE_DATASET,
+  countGigs,
+  getFeaturedGigs,
+  getRecentVenues,
+  getSpotlight,
+  getStats,
+} from "@/lib/demo/data";
+import { GENRES, formatPay, formatPayShort, formatGigDate, relativeDay } from "@/lib/format";
 import { GigCard } from "@/components/GigCard";
 import { PHOTOS } from "@/lib/media";
 import {
@@ -20,15 +27,13 @@ import {
   Sticker,
 } from "@/components/ui";
 
-export const dynamic = "force-dynamic";
-
 export default async function Home() {
   const [featured, stats, openCount, venues, spotlight] = await Promise.all([
-    getFeaturedGigs(3),
-    getStats(),
-    countGigs({ status: "open" }),
-    getRecentVenues(6),
-    getSpotlight(),
+    getFeaturedGigs(BASE_DATASET, 3),
+    getStats(BASE_DATASET),
+    countGigs(BASE_DATASET, { status: "open" }),
+    getRecentVenues(BASE_DATASET, 6),
+    getSpotlight(BASE_DATASET),
   ]);
   const star = spotlight[0];
 
@@ -43,7 +48,7 @@ export default async function Home() {
         />
         <div
           aria-hidden
-          className="absolute -left-28 top-40 h-[280px] w-[280px] rotate-12 rounded-full bg-sky/80 halftone-lg text-cobalt"
+          className="absolute -left-28 top-40 hidden h-[280px] w-[280px] rotate-12 rounded-full bg-sky/80 halftone-lg text-cobalt sm:block"
         />
 
         <div className="relative mx-auto grid max-w-[1240px] gap-12 px-4 pb-16 pt-12 md:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:pb-24 lg:pt-20">
@@ -81,16 +86,16 @@ export default async function Home() {
               </Link>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <div className="mt-10 grid max-w-xl grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-4 md:max-w-none">
               {[
-                ["$0", "commission, ever"],
+                ["₹0", "commission, ever"],
                 [`${stats.venues}`, "rooms on the board"],
                 [`${stats.musicians}`, "players one-sheeted"],
-                [formatPay(stats.paid, "flat").replace(/ .*/, ""), "on the board this week"],
+                [formatPayShort(stats.paid), "on the board this week"],
               ].map(([big, small]) => (
                 <div key={small} className="flex items-baseline gap-2">
                   <span className="font-display text-[30px] leading-none">{big}</span>
-                  <span className="max-w-[120px] font-mono text-[10px] font-bold uppercase leading-tight tracking-[0.1em] text-ink-soft">
+                  <span className="max-w-[104px] font-mono text-[10px] font-bold uppercase leading-tight tracking-[0.1em] text-ink-soft">
                     {small}
                   </span>
                 </div>
@@ -100,10 +105,10 @@ export default async function Home() {
 
           {/* stacked cut-out photos */}
           <div className="relative min-h-[430px] lg:min-h-[560px]">
-            <div className="absolute right-0 top-0 w-[62%] max-w-[330px] rotate-[5deg]">
+            <div className="absolute right-0 top-0 z-20 w-[62%] max-w-[330px] rotate-[5deg]">
               <Polaroid src={PHOTOS.jazzBand} rotate="0deg" caption="The Rusty Nail, Fri, 3 sets, sold out by 10" />
             </div>
-            <div className="absolute left-0 top-[24%] w-[54%] max-w-[280px] rotate-[-7deg]">
+            <div className="absolute left-0 top-[27%] z-10 w-[54%] max-w-[280px] rotate-[-7deg]">
               <Polaroid
                 src={PHOTOS.duoVocal}
                 rotate="0deg"
@@ -111,21 +116,21 @@ export default async function Home() {
                 caption="duo booked 48 hrs before doors"
               />
             </div>
-            <div className="absolute bottom-0 right-[6%] w-[46%] max-w-[250px] rotate-[8deg]">
-              <Polaroid src={PHOTOS.sax} rotate="0deg" tone="bg-sky" caption="sax for Sunday brunch — $180 flat" />
+            <div className="absolute bottom-0 right-[6%] z-30 w-[46%] max-w-[250px] rotate-[8deg]">
+              <Polaroid src={PHOTOS.sax} rotate="0deg" tone="bg-sky" caption="sax for Sunday brunch — ₹6,000 flat" />
             </div>
 
-            <div className="absolute left-[6%] top-[6%]">
+            <div className="absolute left-[6%] top-[6%] z-40">
               <Sticker bg="bg-ink" text="text-marigold" rotate="-8deg">
                 No agents
               </Sticker>
             </div>
-            <div className="absolute bottom-[16%] left-[2%]">
+            <div className="absolute bottom-[16%] left-[2%] z-40">
               <Sticker bg="bg-bubblegum" text="text-paper-2" rotate="4deg">
                 Paid on the night
               </Sticker>
             </div>
-            <div className="absolute right-[38%] top-[46%] hidden lg:block">
+            <div className="absolute right-[38%] top-[46%] z-40 hidden lg:block">
               <div className="spin-slow h-24 w-24 rounded-full border-[3px] border-ink bg-moss text-paper-2">
                 <div className="flex h-full w-full flex-col items-center justify-center text-center font-mono text-[9px] font-bold uppercase leading-tight tracking-[0.1em]">
                   <Asterisk className="mb-1 h-4 w-4" />
@@ -287,9 +292,9 @@ export default async function Home() {
               </p>
               <footer className="mt-4 flex flex-wrap items-center gap-3">
                 <span className="font-heavy text-[14px] uppercase tracking-[0.06em]">
-                  {star?.musician.name ?? "Delia Fontaine"}
+                  {star?.musician.name ?? "Ira Sen"}
                 </span>
-                <Chip tone="cobalt">{star?.musician.city ?? "Oakland"} · {star?.musician.state ?? "CA"}</Chip>
+                <Chip tone="cobalt">{star?.musician.city ?? "Mumbai"} · {star?.musician.state ?? "MH"}</Chip>
                 <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-moss">
                   {star?.booked ?? 6} gigs booked via the wire
                 </span>
@@ -298,7 +303,7 @@ export default async function Home() {
 
             <div className="mt-9 grid gap-4 sm:grid-cols-3">
               {[
-                ["Mon", "Board check. Filter: horns, 30mi, $200 floor."],
+                ["Mon", "Board check. Filter: horns, 30km, ₹10,000 floor."],
                 ["Wed", "One-sheets out. Two rooms reply same day."],
                 ["Fri", "Doors 9. Paid before load-out."],
               ].map(([day, txt]) => (
@@ -374,8 +379,8 @@ export default async function Home() {
               {
                 quote:
                   "Posted a Tuesday vacancy at 4pm on a Monday. Four applications by dinner, a trio by Thursday, and I didn't speak to a single agent.",
-                who: "Gerry Mack",
-                where: "Blue Eyed Oddfellows, Chicago",
+                who: "Rohan Mehta",
+                where: "The Kala Ghoda Room, Mumbai",
                 tone: "bg-butter",
                 rot: "-2.2deg",
                 stars: 5,
@@ -383,8 +388,8 @@ export default async function Home() {
               {
                 quote:
                   "I'm a sub. I don't want a career, I want next Friday. This is the only board where I can see the pay before I waste an evening on a phone call.",
-                who: "Priya Raghunathan",
-                where: "Alto & tenor, Chicago",
+                who: "Priya Raghavan",
+                where: "Alto & tenor, Mumbai",
                 tone: "bg-sky",
                 rot: "1.6deg",
                 stars: 5,
@@ -392,8 +397,8 @@ export default async function Home() {
               {
                 quote:
                   "We had a curfew, a drunk door guy and no singer. Somebody on the wire had all three problems solved and a van.",
-                who: "Rosa Villalobos",
-                where: "The Rusty Nail, Oakland",
+                who: "Sourav Chatterjee",
+                where: "Banyan Courtyard, Kolkata",
                 tone: "bg-bubblegum text-paper-2",
                 rot: "-1.1deg",
                 stars: 4,

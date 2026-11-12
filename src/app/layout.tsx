@@ -1,31 +1,149 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Anton, Archivo_Black, Instrument_Serif, Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SITE, pageUrl } from "@/lib/site";
+
+const anton = Anton({ weight: "400", subsets: ["latin"], variable: "--font-anton", display: "swap" });
+const archivo = Archivo_Black({ weight: "400", subsets: ["latin"], variable: "--font-archivo", display: "swap" });
+const instrument = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-instrument",
+  display: "swap",
+});
+const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-grotesk", display: "swap" });
+const mono = Space_Mono({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-space-mono", display: "swap" });
+
+const title = "GIGWIRE — the gig board for bars, restaurants & the musicians who fill them";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE.url),
   title: {
-    default: "GIGWIRE — gig board for bars, restaurants & the musicians who fill them",
+    default: title,
     template: "%s · GIGWIRE",
   },
-  description:
-    "Bars and restaurants post live music vacancies. Musicians search them, apply in one form, and get paid. A handmade gig board with no agents and no fees.",
+  description: SITE.description,
+  applicationName: SITE.name,
+  generator: "Next.js",
+  authors: [{ name: SITE.author, url: "https://github.com/Abhinav-Prabhakar" }],
+  creator: SITE.author,
+  publisher: SITE.name,
+  category: "music",
+  classification: "Live music booking, gig board, musicians",
+  keywords: [
+    "live music gigs",
+    "bar gigs",
+    "restaurant live music",
+    "band booking",
+    "musician jobs",
+    "gig board",
+    "find a gig",
+    "book a band",
+    "session musicians",
+    "cover band",
+    "jazz gigs",
+    "paid gigs for musicians",
+  ],
+  alternates: {
+    canonical: pageUrl("/"),
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: "en_IN",
+    url: pageUrl("/"),
+    title,
+    description: SITE.description,
+    images: [
+      {
+        url: pageUrl("/og.png"),
+        width: 1200,
+        height: 630,
+        alt: "GIGWIRE — somebody's bar needs a band tonight",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description: SITE.description,
+    images: [pageUrl("/og.png")],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: `${SITE.basePath}/favicon.ico`, sizes: "any" },
+      { url: `${SITE.basePath}/icon.svg`, type: "image/svg+xml" },
+      { url: `${SITE.basePath}/icon-32.png`, type: "image/png", sizes: "32x32" },
+      { url: `${SITE.basePath}/icon-192.png`, type: "image/png", sizes: "192x192" },
+      { url: `${SITE.basePath}/icon-512.png`, type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: `${SITE.basePath}/favicon.ico`,
+    apple: [{ url: `${SITE.basePath}/apple-touch-icon.png`, sizes: "180x180", type: "image/png" }],
+  },
+  manifest: `${SITE.basePath}/manifest.webmanifest`,
+  appleWebApp: {
+    capable: true,
+    title: SITE.name,
+    statusBarStyle: "default",
+  },
+  formatDetection: { telephone: false, address: false, email: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f1e4cd",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f1e4cd" },
+    { media: "(prefers-color-scheme: dark)", color: "#171310" },
+  ],
+  colorScheme: "light",
+  width: "device-width",
+  initialScale: 1,
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE.name,
+  alternateName: "Gigwire gig board",
+  url: SITE.url,
+  description: SITE.description,
+  inLanguage: "en-IN",
+  publisher: {
+    "@type": "Person",
+    name: SITE.author,
+    url: "https://github.com/Abhinav-Prabhakar",
+  },
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${pageUrl("/gigs")}?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${anton.variable} ${archivo.variable} ${instrument.variable} ${grotesk.variable} ${mono.variable}`}
+    >
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
-          rel="stylesheet"
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
       <body className="paper-grain min-h-screen bg-paper text-ink">

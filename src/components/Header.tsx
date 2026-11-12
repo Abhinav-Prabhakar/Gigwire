@@ -1,10 +1,22 @@
-import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth";
-import { Marquee, IconBolt } from "@/components/ui";
+"use client";
 
-export async function Header() {
-  const user = await getCurrentUser();
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Marquee, IconBolt } from "@/components/ui";
+import { currentUser, signOut, useDemo } from "@/lib/demo/store";
+
+export function Header() {
+  const router = useRouter();
+  const state = useDemo();
+  const user = currentUser(state);
   const dashboard = user?.role === "venue" ? "/dashboard" : "/profile";
+
+  const nav = [
+    { href: "/gigs", label: "Find a gig" },
+    { href: "/post", label: "Post a gig" },
+    { href: "/rooms", label: "Rooms" },
+    { href: "/how-it-works", label: "How it works" },
+  ];
 
   return (
     <header className="relative z-50">
@@ -29,7 +41,7 @@ export async function Header() {
 
       <div className="sticky top-0 z-50 border-b-[3px] border-ink bg-paper-2/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1240px] items-center gap-4 px-4 py-3 md:px-8">
-          <Link href="/" className="group flex items-center gap-2.5">
+          <Link href="/" className="group flex items-center gap-2.5" aria-label="GIGWIRE home">
             <span className="flex h-9 w-9 items-center justify-center border-[3px] border-ink bg-tomato text-paper-2 shadow-hard-sm transition group-hover:bg-marigold group-hover:text-ink">
               <IconBolt className="h-5 w-5" />
             </span>
@@ -39,12 +51,7 @@ export async function Header() {
           </Link>
 
           <nav className="ml-4 hidden items-center gap-1 lg:flex">
-            {[
-              { href: "/gigs", label: "Find a gig" },
-              { href: "/post", label: "Post a gig" },
-              { href: "/rooms", label: "Rooms" },
-              { href: "/how-it-works", label: "How it works" },
-            ].map((l) => (
+            {nav.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
@@ -76,13 +83,22 @@ export async function Header() {
                     {user.name.split(" ")[0]}
                   </span>
                 </Link>
-                <form action="/api/auth/logout" method="post">
-                  <button className="btn btn-ghost !px-3 !py-1.5">Sign out</button>
-                </form>
+                <button
+                  onClick={() => {
+                    signOut();
+                    router.push("/");
+                  }}
+                  className="btn btn-ghost !px-3 !py-1.5"
+                >
+                  Sign out
+                </button>
               </>
             ) : (
               <>
-                <Link href="/login" className="hidden font-mono text-[11px] font-bold uppercase tracking-[0.14em] underline decoration-2 underline-offset-4 sm:block">
+                <Link
+                  href="/login"
+                  className="hidden font-mono text-[11px] font-bold uppercase tracking-[0.14em] underline decoration-2 underline-offset-4 sm:block"
+                >
                   Log in
                 </Link>
                 <Link href="/post" className="btn btn-tomato !py-2">
@@ -96,12 +112,12 @@ export async function Header() {
         <div className="border-t-[3px] border-ink/15 lg:hidden">
           <div className="mx-auto flex max-w-[1240px] items-center gap-1.5 overflow-x-auto px-3 py-2">
             {[
-              { href: "/gigs", label: "Find a gig" },
-              { href: "/post", label: "Post a gig" },
-              { href: "/rooms", label: "Rooms" },
-              { href: "/how-it-works", label: "How it works" },
+              ...nav,
               ...(user
-                ? [{ href: dashboard, label: "My desk" }, { href: "/profile", label: "My sheet" }]
+                ? [
+                    { href: dashboard, label: "My desk" },
+                    { href: "/profile", label: "My sheet" },
+                  ]
                 : [{ href: "/signup", label: "Sign up" }]),
             ].map((l) => (
               <Link

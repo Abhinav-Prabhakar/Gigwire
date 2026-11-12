@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getStats } from "@/lib/data";
-import { formatPay } from "@/lib/format";
+import { BASE_DATASET, getStats } from "@/lib/demo/data";
+import { formatPayShort } from "@/lib/format";
 import {
   Chip,
   Eyebrow,
@@ -18,10 +18,14 @@ import {
   Sticker,
 } from "@/components/ui";
 import { PHOTOS } from "@/lib/media";
+import { pageUrl } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
-
-export const metadata = { title: "How the board works" };
+export const metadata = {
+  title: "How the board works",
+  description:
+    "Four moves: a room writes the flyer, a player pins their one-sheet, the room says yes, and money changes hands after load-out. The rules, the pledge and the small print.",
+  alternates: { canonical: pageUrl("/how-it-works") },
+};
 
 const FAQ = [
   [
@@ -51,7 +55,7 @@ const FAQ = [
 ];
 
 export default async function HowItWorks() {
-  const stats = await getStats();
+  const stats = getStats(BASE_DATASET);
 
   return (
     <div>
@@ -76,7 +80,7 @@ export default async function HowItWorks() {
               <Chip tone="ink">{stats.openGigs} live nights</Chip>
               <Chip tone="ink">{stats.venues} rooms</Chip>
               <Chip tone="ink">{stats.musicians} players</Chip>
-              <Chip tone="ink">$0 commission</Chip>
+              <Chip tone="ink">₹0 commission</Chip>
             </div>
           </div>
           <div className="relative">
@@ -134,7 +138,7 @@ export default async function HowItWorks() {
             {
               icon: <IconCash className="h-6 w-6" />,
               n: "04",
-              title: "Money in the car park",
+              title: "Money after load-out",
               body: "The number on the flyer, paid after the last set. Tips on top. No invoice net-60, no 'accounting week'.",
               tone: "bg-moss text-paper-2",
             },
@@ -228,7 +232,7 @@ export default async function HowItWorks() {
               Browse {stats.openGigs} gigs
             </Link>
             <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
-              {formatPay(stats.paid, "flat")} currently promised on the board
+              {formatPayShort(stats.paid)} currently promised on the board
             </p>
           </div>
         </aside>

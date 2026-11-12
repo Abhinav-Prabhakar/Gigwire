@@ -285,7 +285,7 @@ export function Polaroid({
   return (
     <figure
       style={{ transform: `rotate(${rotate})` }}
-      className={`paper-grain relative border-[3px] border-ink p-2.5 pb-9 shadow-hard-lg ${tone} ${className}`}
+      className={`paper-grain relative border-[3px] border-ink p-2.5 shadow-hard-lg ${tone} ${className}`}
     >
       <span aria-hidden className="tape -top-4 left-1/2 -translate-x-1/2 -rotate-3" />
       <div className="overflow-hidden border-2 border-ink">
@@ -293,7 +293,7 @@ export function Polaroid({
         <img src={src} alt="" loading="lazy" className="block h-full w-full object-cover mix-blend-multiply" />
       </div>
       {caption ? (
-        <figcaption className="absolute bottom-2 left-3 right-3 font-serif text-[15px] italic leading-tight text-ink-soft">
+        <figcaption className="mt-2 px-1 pb-0.5 font-serif text-[14.5px] italic leading-snug text-ink-soft">
           {caption}
         </figcaption>
       ) : null}

@@ -1,12 +1,14 @@
 {
-  "name": "nextjs-postgresql-template",
+  "name": "gigwire",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "build:pages": "GITHUB_PAGES=1 next build",
+    "preview": "npx serve out",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "photos": "node scripts/fetch-photos.mjs"
   },
   "dependencies": {
     "dotenv": "17.3.1",
@@ -28,5 +30,12 @@
     "postcss": "8.5.23",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3"
-  }
+  },
+  "description": "A handmade live-music gig board for India. Static Next.js demo on GitHub Pages.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Abhinav-Prabhakar/Gigwire.git"
+  },
+  "homepage": "https://abhinav-prabhakar.github.io/Gigwire/"
 }

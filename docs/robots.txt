@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /login/
+
+Host: https://abhinav-prabhakar.github.io/Gigwire
+Sitemap: https://abhinav-prabhakar.github.io/Gigwire/sitemap.xml

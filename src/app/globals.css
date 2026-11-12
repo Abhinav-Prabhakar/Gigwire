@@ -16,11 +16,11 @@
   --color-sky: #9fdcea;
   --color-tangerine: #ff7a1a;
 
-  --font-display: "Anton", "Impact", sans-serif;
-  --font-heavy: "Archivo Black", "Arial Black", sans-serif;
-  --font-serif: "Instrument Serif", Georgia, serif;
-  --font-mono: "Space Mono", ui-monospace, monospace;
-  --font-body: "Space Grotesk", "Helvetica Neue", sans-serif;
+  --font-display: var(--font-anton), "Impact", sans-serif;
+  --font-heavy: var(--font-archivo), "Arial Black", sans-serif;
+  --font-serif: var(--font-instrument), Georgia, serif;
+  --font-mono: var(--font-space-mono), ui-monospace, monospace;
+  --font-body: var(--font-grotesk), "Helvetica Neue", sans-serif;
 }
 
 @layer base {
@@ -277,4 +277,21 @@
 }
 .jitter:hover {
   animation: jitter 0.35s ease-in-out 2;
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .marquee-track,
+  .spin-slow,
+  .jitter:hover {
+    animation: none !important;
+  }
+  .lift,
+  .btn,
+  .field {
+    transition: none;
+  }
 }

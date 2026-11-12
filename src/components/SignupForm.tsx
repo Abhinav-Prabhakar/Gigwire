@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { GENRES, LINEUP } from "@/lib/format";
+import { signUp } from "@/lib/demo/store";
 
 export function SignupForm({
   next,
@@ -10,14 +12,49 @@ export function SignupForm({
   next: string;
   initialRole?: string;
 }) {
+  const router = useRouter();
   const [role, setRole] = useState(initialRole === "venue" ? "venue" : "musician");
   const [genres, setGenres] = useState<string[]>([]);
   const [instruments, setInstruments] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const toggle = (list: string[], set: (v: string[]) => void, value: string) =>
     set(list.includes(value) ? list.filter((x) => x !== value) : [...list, value]);
 
   return (
-    <form action="/api/auth/signup" method="post" className="space-y-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        setBusy(true);
+        const fd = new FormData(e.currentTarget);
+        const str = (key: string) => String(fd.get(key) ?? "").trim();
+        const result = signUp({
+          role: role === "venue" ? "venue" : "musician",
+          name: str("name"),
+          email: str("email"),
+          password: str("password"),
+          city: str("city"),
+          state: str("state"),
+          headline: str("headline"),
+          bio: str("bio"),
+          links: str("links"),
+          instruments,
+          genres,
+          venueName: str("venueName"),
+          venueTagline: str("venueTagline"),
+          venueAddress: str("venueAddress"),
+          venueCapacity: Number.parseInt(str("venueCapacity") || "90", 10),
+          venueDescription: str("venueDescription"),
+        });
+        if (!result.ok) {
+          setError(result.error ?? "Something went sideways.");
+          setBusy(false);
+          return;
+        }
+        router.push(result.user?.role === "venue" ? "/dashboard" : next);
+      }}
+      className="space-y-4"
+    >
       <input type="hidden" name="intent" value="signup" />
       <input type="hidden" name="role" value={role} />
       <input type="hidden" name="next" value={next} />
@@ -54,7 +91,7 @@ export function SignupForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="label">{role === "venue" ? "Your name" : "Your name / band name"}</span>
-          <input name="name" required className="field" placeholder={role === "venue" ? "Rosa Villalobos" : "The Night Owls"} />
+          <input name="name" required className="field" placeholder={role === "venue" ? "Rohan Mehta" : "The Midnight Local"} />
         </label>
         <label className="block">
           <span className="label">Email</span>
@@ -67,11 +104,11 @@ export function SignupForm({
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="label">City</span>
-            <input name="city" className="field" placeholder="Oakland" />
+            <input name="city" className="field" placeholder="Mumbai" />
           </label>
           <label className="block">
             <span className="label">State</span>
-            <input name="state" className="field" placeholder="CA" />
+            <input name="state" className="field" placeholder="MH" />
           </label>
         </div>
       </div>
@@ -80,7 +117,7 @@ export function SignupForm({
         <>
           <label className="block">
             <span className="label">Headline (what a booker reads first)</span>
-            <input name="headline" className="field" placeholder="Motown revival 6-piece · two singers, horns" />
+            <input name="headline" className="field" placeholder="Bollywood funk 6-piece · two singers, horns" />
           </label>
           <label className="block">
             <span className="label">One link</span>
@@ -121,7 +158,7 @@ export function SignupForm({
             </label>
             <label className="block">
               <span className="label">Address</span>
-              <input name="venueAddress" className="field" placeholder="1187 Peralta St" />
+              <input name="venueAddress" className="field" placeholder="12 Rampart Row" />
             </label>
             <label className="block">
               <span className="label">Capacity</span>
@@ -153,7 +190,15 @@ export function SignupForm({
         </div>
       </fieldset>
 
-      <button className="btn btn-tomato w-full !py-4 !text-[15px]">Pin me to the board</button>
+      {error ? (
+        <p className="border-[3px] border-ink bg-tomato px-3 py-2 font-mono text-[11px] font-bold uppercase text-paper-2">
+          {error}
+        </p>
+      ) : null}
+
+      <button className="btn btn-tomato w-full !py-4 !text-[15px]" disabled={busy}>
+        {busy ? "Pinning you up…" : "Pin me to the board"}
+      </button>
       <p className="text-center font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
         No card. No commission. Delete it all whenever you like.
       </p>

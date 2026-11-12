@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { db } from "@/db";
-import { gigs, users, venues } from "@/db/schema";
-import { asc, desc, eq, sql } from "drizzle-orm";
-import { formatPay, relativeDay } from "@/lib/format";
+import { BASE_DATASET, getRooms } from "@/lib/demo/data";
+import { formatPay, formatPayShort } from "@/lib/format";
+import { PHOTOS } from "@/lib/media";
+import { pageUrl } from "@/lib/site";
 import {
   Chip,
   Eyebrow,
@@ -15,36 +15,15 @@ import {
   Stamp,
 } from "@/components/ui";
 
-export const dynamic = "force-dynamic";
-
-export const metadata = { title: "Rooms on the wire" };
+export const metadata = {
+  title: "Rooms on the wire",
+  description:
+    "The bars, cafés, taprooms and courtyards posting live music gigs on GIGWIRE — capacity, curfew and pay, in their own words.",
+  alternates: { canonical: pageUrl("/rooms") },
+};
 
 export default async function RoomsPage() {
-  const rows = await db
-    .select({
-      venue: venues,
-      owner: users,
-      openGigs: sql<number>`(select count(*)::int from gigs g where g.venue_id = venues.id and g.status in ('open','interviewing'))`,
-      paid: sql<number>`(select coalesce(sum(g.pay_amount),0)::int from gigs g where g.venue_id = venues.id and g.status in ('open','interviewing'))`,
-      capacity: venues.capacity,
-    })
-    .from(venues)
-    .leftJoin(users, eq(venues.ownerId, users.id))
-    .orderBy(
-      desc(sql`(select count(*)::int from gigs g where g.venue_id = venues.id and g.status in ('open','interviewing'))`),
-      asc(venues.name),
-    );
-
-  const gigLists = await Promise.all(
-    rows.map((r) =>
-      db
-        .select()
-        .from(gigs)
-        .where(sql`gigs.venue_id = ${r.venue.id} and gigs.status in ('open','interviewing')`)
-        .orderBy(asc(gigs.gigDate))
-        .limit(3),
-    ),
-  );
+  const rows = getRooms(BASE_DATASET);
 
   return (
     <div>
@@ -60,7 +39,7 @@ export default async function RoomsPage() {
           <p className="mt-5 max-w-xl text-[17px] leading-relaxed">
             Every room on this board writes their own capacity, curfew and pay. No listings agency, no “submitted by
             partner”. {rows.length} rooms, {rows.reduce((n, r) => n + r.openGigs, 0)} open nights,{" "}
-            {formatPay(rows.reduce((n, r) => n + r.paid, 0), "flat").replace(/ .*/, "")} on the table.
+            {formatPayShort(rows.reduce((n, r) => n + r.paid, 0))} on the table.
           </p>
         </div>
       </section>
@@ -94,7 +73,7 @@ export default async function RoomsPage() {
               <div className="relative border-b-[3px] border-ink">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={r.venue.coverUrl ?? "https://images.pexels.com/photos/11468997/pexels-photo-11468997.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200"}
+                  src={r.venue.coverUrl ?? PHOTOS.barNeon}
                   alt=""
                   loading="lazy"
                   className="h-48 w-full border-b-[3px] border-ink object-cover mix-blend-multiply"
@@ -129,8 +108,8 @@ export default async function RoomsPage() {
                 </div>
 
                 <ul className="mt-5 space-y-2 border-t-[3px] border-dashed border-ink/30 pt-4">
-                  {gigLists[i]?.length ? (
-                    gigLists[i].map((g) => (
+                  {r.upcoming.length ? (
+                    r.upcoming.map((g) => (
                       <li key={g.id} className="flex items-baseline justify-between gap-3">
                         <Link
                           href={`/gigs/${g.id}`}

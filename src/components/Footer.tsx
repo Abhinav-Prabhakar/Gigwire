@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Marquee, IconBolt } from "@/components/ui";
+import { CITIES } from "@/lib/format";
 
 export function Footer() {
   return (
@@ -33,7 +34,7 @@ export function Footer() {
             Monday. No agents. No commissions. No “we’ll get back to you”.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
-            {["Oakland", "Chicago", "Brooklyn", "Austin", "Portland", "New Orleans"].map((c) => (
+            {CITIES.map((c) => (
               <Link
                 key={c}
                 href={`/gigs?city=${encodeURIComponent(c)}`}

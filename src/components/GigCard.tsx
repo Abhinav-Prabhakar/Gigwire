@@ -1,11 +1,14 @@
+"use client";
+
 import Link from "next/link";
-import type { GigRow } from "@/lib/data";
+import { useRouter } from "next/navigation";
+import type { GigRow } from "@/lib/demo/data";
+import { currentUser, toggleBookmark, useDemo } from "@/lib/demo/store";
 import { formatGigDate, formatPay, relativeDay, timeRange } from "@/lib/format";
 import { Chip, DateBlock, IconClock, IconPin, IconUsers, IconBookmark, IconBolt } from "@/components/ui";
 
 export function StatusFlag({ status }: { status: string }) {
-  if (status === "filled")
-    return <Chip tone="ink">Filled</Chip>;
+  if (status === "filled") return <Chip tone="ink">Filled</Chip>;
   if (status === "closed") return <Chip tone="ink">Closed</Chip>;
   if (status === "interviewing") return <Chip tone="cobalt">Interviewing</Chip>;
   return <Chip tone="moss">Open</Chip>;
@@ -13,19 +16,35 @@ export function StatusFlag({ status }: { status: string }) {
 
 export function SaveGigForm({
   gigId,
-  saved,
+  saved: initialSaved,
   next,
 }: {
   gigId: number;
   saved: boolean;
   next: string;
 }) {
+  const router = useRouter();
+  const state = useDemo();
+  const user = currentUser(state);
+  const saved = user ? state.data.bookmarks.some((b) => b.musicianId === user.id && b.gigId === gigId) : initialSaved;
+
   return (
-    <form action={`/api/gigs/${gigId}/save`} method="post" className="contents">
-      <input type="hidden" name="next" value={next} />
+    <form
+      className="contents"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!user) {
+          router.push(`/login?next=${encodeURIComponent(next)}`);
+          return;
+        }
+        toggleBookmark(gigId);
+      }}
+    >
       <button
         type="submit"
         title={saved ? "Remove from saved gigs" : "Save this gig"}
+        aria-label={saved ? "Remove from saved gigs" : "Save this gig"}
+        aria-pressed={saved}
         className={`relative z-20 flex h-9 w-9 items-center justify-center border-[3px] border-ink transition hover:bg-marigold ${
           saved ? "bg-marigold text-ink" : "bg-paper-2 text-ink"
         }`}
@@ -68,7 +87,7 @@ export function GigCard({
       <div className="flex items-start gap-3 border-b-[3px] border-ink bg-paper-3/70 p-3.5">
         <DateBlock weekday={d.weekday} day={d.day} month={d.month} bg={teaser ? "bg-paper-2" : "bg-marigold"} />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-ink-soft">
+          <p className="truncate font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-ink-soft">
             {venue?.name ?? "Independent room"}
           </p>
           <h3 className="mt-1 font-heavy text-[17px] leading-[1.15]">
@@ -86,7 +105,7 @@ export function GigCard({
             </span>
           </div>
         </div>
-        <div className="hidden shrink-0 -translate-y-6 sm:block">
+        <div className="absolute -right-3 -top-5 z-10 hidden sm:block">
           <span className="sticker bg-tomato text-paper-2 !border-ink" style={{ transform: "rotate(6deg)" }}>
             {rel}
           </span>
@@ -120,9 +139,12 @@ export function GigCard({
 
       <div className="flex items-center justify-between gap-2 border-t-[3px] border-ink bg-paper-3/80 px-3.5 py-2.5">
         <div className="flex items-baseline gap-1.5">
-          <span className="font-display text-[24px] leading-none text-moss">{formatPay(gig.payAmount, gig.payUnit).replace(/ .*/, "")}</span>
-          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ink-soft">
-            {gig.payUnit === "flat" ? "flat" : gig.payUnit === "hour" ? "per hour" : "per set"} · {gig.setsCount} sets
+          <span className="font-display text-[22px] leading-none text-moss">
+            {formatPay(gig.payAmount, gig.payUnit).replace(/ .*/, "")}
+          </span>
+          <span className="whitespace-nowrap font-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-ink-soft">
+            {gig.payUnit === "flat" ? "flat" : gig.payUnit === "hour" ? "hourly" : "per set"} ·{" "}
+            {gig.setsCount} {gig.setsCount === 1 ? "set" : "sets"}
           </span>
         </div>
         <div className="flex items-center gap-2">

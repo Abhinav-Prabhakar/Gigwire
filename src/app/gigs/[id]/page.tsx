@@ -1,20 +1,16 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { db } from "@/db";
-import { applications, users } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
-import { getApplicationsForGig, getGig, getSavedGigIds, searchGigs } from "@/lib/data";
-import { getCurrentUser } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { BASE_DATASET, getGig, getUser, searchGigs } from "@/lib/demo/data";
 import { formatGigDate, formatPay, relativeDay, timeRange } from "@/lib/format";
-import { GigCard, SaveGigForm } from "@/components/GigCard";
+import { GigCard } from "@/components/GigCard";
+import { ApplyRail, OwnerApplications } from "@/components/gig/ApplyRail";
 import {
   Chip,
   DateBlock,
   Eyebrow,
   IconAmp,
   IconArrow,
-  IconBolt,
-  IconCheck,
   IconClock,
   IconMusic,
   IconPin,
@@ -22,63 +18,44 @@ import {
   IconStar,
   IconUsers,
   Polaroid,
-  Stamp,
   Sticker,
 } from "@/components/ui";
 import { PHOTOS } from "@/lib/media";
+import { pageUrl } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
+export function generateStaticParams() {
+  return BASE_DATASET.gigs.map((gig) => ({ id: String(gig.id) }));
+}
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const gig = await getGig(Number.parseInt(id, 10));
+  const gig = getGig(BASE_DATASET, Number.parseInt(id, 10));
   if (!gig) return { title: "Gig not on the board" };
   return {
     title: `${gig.gig.title} — ${gig.venue?.name ?? "a local room"}`,
-    description: `${formatPay(gig.gig.payAmount, gig.gig.payUnit)} · ${gig.gig.city} · ${gig.gig.gigDate}`,
+    description: `${formatPay(gig.gig.payAmount, gig.gig.payUnit)} · ${gig.gig.city} · ${gig.gig.gigDate}. Apply with a one-sheet on GIGWIRE.`,
+    alternates: { canonical: pageUrl(`/gigs/${gig.gig.id}`) },
+    openGraph: {
+      title: `${gig.gig.title} — ${gig.venue?.name ?? "a local room"}`,
+      description: `${formatPay(gig.gig.payAmount, gig.gig.payUnit)} · ${gig.gig.city} · ${gig.gig.gigDate}`,
+      url: pageUrl(`/gigs/${gig.gig.id}`),
+    },
   };
 }
 
-export default async function GigPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function GigPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const sp = await searchParams;
   const gigId = Number.parseInt(id, 10);
-  const data = await getGig(gigId);
+  const data = getGig(BASE_DATASET, gigId);
   if (!data) notFound();
 
   const { gig, venue, appCount } = data;
-  const owner = venue
-    ? (await db.select().from(users).where(eq(users.id, venue.ownerId)).limit(1))[0] ?? null
-    : null;
-  const user = await getCurrentUser();
+  const owner = venue ? getUser(BASE_DATASET, venue.ownerId) : null;
   const d = formatGigDate(gig.gigDate);
 
-  const [myApp, savedIds, related] = await Promise.all([
-    user
-      ? db
-          .select()
-          .from(applications)
-          .where(and(eq(applications.gigId, gigId), eq(applications.musicianId, user.id)))
-          .limit(1)
-          .then((r) => r[0] ?? null)
-      : Promise.resolve(null),
-    user ? getSavedGigIds(user.id) : Promise.resolve<number[]>([]),
-    searchGigs({ city: gig.city ?? undefined, sort: "date" }, 8).then((rows) =>
-      rows.filter((r) => r.gig.id !== gigId).slice(0, 3),
-    ),
-  ]);
-
-  const isOwner = user?.role === "venue" && venue?.ownerId === user?.id;
-  const saved = user ? savedIds.includes(gig.id) : false;
-  const venueApps = isOwner ? await getApplicationsForGig(gig.id) : [];
-
-  if (gig.status === "closed" && !isOwner) redirect("/gigs");
+  const related = searchGigs(BASE_DATASET, { city: gig.city ?? undefined, sort: "date" }, 8)
+    .filter((r) => r.gig.id !== gigId)
+    .slice(0, 3);
 
   return (
     <div>
@@ -92,13 +69,7 @@ export default async function GigPage({
             <IconArrow className="h-4 w-4 rotate-180" /> Back to the board
           </Link>
           <div className="mt-6 flex flex-wrap items-start gap-6">
-            <DateBlock
-              weekday={d.weekday}
-              day={d.day}
-              month={d.month}
-              bg="bg-marigold"
-              className="!w-[104px] !py-3"
-            />
+            <DateBlock weekday={d.weekday} day={d.day} month={d.month} bg="bg-marigold" className="!w-[104px] !py-3" />
             <div className="min-w-0 flex-1">
               <h1 className="max-w-4xl text-[clamp(2rem,5.6vw,4.2rem)] uppercase leading-[0.86]">{gig.title}</h1>
               <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[11.5px] font-bold uppercase tracking-[0.14em] text-paper-3">
@@ -122,24 +93,14 @@ export default async function GigPage({
       </section>
 
       <div className="mx-auto grid max-w-[1240px] gap-8 px-4 py-12 md:px-8 lg:grid-cols-[1fr_380px]">
-        {/* ---------------- flyer ---------------- */}
         <div>
-          {(sp.applied || sp.error || sp.saved) && (
-            <div
-              className={`mb-6 flex items-center gap-3 border-[3px] border-ink px-4 py-3 shadow-hard-sm ${
-                sp.error ? "bg-tomato text-paper-2" : "bg-moss text-paper-2"
-              }`}
-            >
-              <IconCheck className="h-5 w-5 shrink-0" />
+          {gig.status === "closed" ? (
+            <div className="mb-6 border-[3px] border-ink bg-paper-3 px-4 py-3 shadow-hard-sm">
               <p className="font-mono text-[12px] font-bold uppercase tracking-[0.1em]">
-                {sp.error
-                  ? String(sp.error)
-                  : sp.saved
-                    ? "Pinned to your board."
-                    : "One-sheet sent. Watch your tracker."}
+                This flyer has been taken down by the room. The rest of the board is still up.
               </p>
             </div>
-          )}
+          ) : null}
 
           <div className="paper-grain relative border-[3px] border-ink bg-paper-2 p-6 shadow-hard md:p-8">
             <Sticker bg="bg-butter" text="text-ink" className="!absolute -right-3 -top-5 hidden md:inline-flex">
@@ -169,9 +130,7 @@ export default async function GigPage({
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <div className="border-[3px] border-ink bg-moss p-4 text-paper-2">
                 <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">The money</p>
-                <p className="mt-1 font-display text-[40px] leading-none">
-                  {formatPay(gig.payAmount, gig.payUnit)}
-                </p>
+                <p className="mt-1 font-display text-[40px] leading-none">{formatPay(gig.payAmount, gig.payUnit)}</p>
                 <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.1em] opacity-90">
                   {gig.spots > 1 ? `${gig.spots} players needed` : "1 player needed"} · paid on the night
                 </p>
@@ -238,13 +197,10 @@ export default async function GigPage({
             ) : null}
 
             {gig.payNote ? (
-              <p className="mt-6 border-l-[6px] border-marigold pl-4 font-serif text-[18px] italic">
-                {gig.payNote}
-              </p>
+              <p className="mt-6 border-l-[6px] border-marigold pl-4 font-serif text-[18px] italic">{gig.payNote}</p>
             ) : null}
           </div>
 
-          {/* venue panel */}
           {venue ? (
             <div className="mt-8 grid gap-5 border-[3px] border-ink bg-paper-2 p-5 shadow-hard sm:grid-cols-[190px_1fr]">
               <div className="border-[3px] border-ink">
@@ -279,155 +235,14 @@ export default async function GigPage({
           ) : null}
         </div>
 
-        {/* ---------------- apply rail ---------------- */}
         <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-          <div className="paper-grain border-[3px] border-ink bg-paper-2 p-5 shadow-hard">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ink-soft">
-                  Apply in 30 seconds
-                </p>
-                <p className="mt-1 font-display text-[30px] leading-none">Send your one-sheet</p>
-              </div>
-              <Stamp className="border-tomato text-tomato">{gig.status}</Stamp>
-            </div>
-
-            {gig.status === "filled" && !isOwner ? (
-              <div className="mt-4 border-[3px] border-ink bg-paper-3 p-4">
-                <p className="font-heavy text-[15px] uppercase">Somebody already has this night</p>
-                <p className="mt-2 text-[15px] leading-snug">
-                  The room marked it filled. Pin it anyway and we&apos;ll keep you posted if it opens back up.
-                </p>
-              </div>
-            ) : isOwner ? (
-              <div className="mt-4 space-y-3">
-                <p className="text-[15px]">
-                  You posted this night. Change its state below or read the {appCount} applications on the flyer.
-                </p>
-                {(["open", "interviewing", "filled", "closed"] as const).map((s) => (
-                  <form
-                    key={s}
-                    action={`/api/gigs/${gig.id}/status`}
-                    method="post"
-                    className="flex items-center gap-3"
-                  >
-                    <input type="hidden" name="status" value={s} />
-                    <input type="hidden" name="next" value="/dashboard" />
-                    <button className={`btn w-full ${gig.status === s ? "btn-ink" : "btn-ghost"}`}>Mark {s}</button>
-                  </form>
-                ))}
-                <Link href="/post" className="btn btn-tomato w-full">
-                  Post another night
-                </Link>
-              </div>
-            ) : myApp ? (
-              <div className="mt-4 border-[3px] border-ink bg-sky p-4">
-                <p className="font-heavy text-[15px] uppercase">Already in the pile</p>
-                <p className="mt-2 text-[15px] leading-snug">
-                  Sent {new Date(myApp.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })} ·
-                  status <strong className="uppercase">{myApp.status}</strong>
-                </p>
-                <Link href="/profile" className="btn btn-ink mt-3 w-full">
-                  Open my tracker <IconArrow className="h-4 w-4" />
-                </Link>
-              </div>
-            ) : user ? (
-              <form action={`/api/gigs/${gig.id}/apply`} method="post" className="mt-4 space-y-3">
-                <input type="hidden" name="next" value={`/gigs/${gig.id}`} />
-                <div className="flex items-center gap-2 border-2 border-ink bg-paper-3 px-2.5 py-1.5">
-                  <span className="flex h-7 w-7 items-center justify-center border-2 border-ink bg-tomato font-heavy text-[11px] text-paper-2">
-                    {user.name.slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="font-mono text-[11px] font-bold uppercase tracking-[0.1em]">{user.name}</span>
-                </div>
-                <div>
-                  <label className="label" htmlFor="lineup">
-                    Who&apos;s coming
-                  </label>
-                  <input
-                    id="lineup"
-                    name="lineup"
-                    defaultValue={user.instruments.join(" / ") || "Solo act"}
-                    className="field"
-                  />
-                </div>
-                <div>
-                  <label className="label" htmlFor="links">
-                    Link they should click
-                  </label>
-                  <input
-                    id="links"
-                    name="links"
-                    defaultValue={user.links ?? ""}
-                    placeholder="bandcamp, live video, instagram"
-                    className="field"
-                  />
-                </div>
-                <div>
-                  <label className="label" htmlFor="pitch">
-                    Note to the booker
-                  </label>
-                  <textarea
-                    id="pitch"
-                    name="pitch"
-                    rows={4}
-                    defaultValue={user.headline ? `${user.headline}. ` : ""}
-                    className="field resize-y"
-                    placeholder="Set length you need, what you bring, when you can soundcheck."
-                  />
-                </div>
-                <button className="btn btn-tomato w-full !py-3.5">
-                  Send it to {venue?.name ?? "the room"} <IconBolt className="h-4 w-4" />
-                </button>
-                <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-soft">
-                  No cover letters. Two sentences and a link beats a PDF.
-                </p>
-              </form>
-            ) : (
-              <div className="mt-4 space-y-3">
-                <p className="text-[15px] leading-snug">
-                  Log in as a player to apply, save this night, and track replies in one place.
-                </p>
-                <Link
-                  href={`/signup?role=musician&next=${encodeURIComponent(`/gigs/${gig.id}`)}`}
-                  className="btn btn-tomato w-full"
-                >
-                  Free player account
-                </Link>
-                <Link
-                  href={`/login?next=${encodeURIComponent(`/gigs/${gig.id}`)}`}
-                  className="btn btn-ghost w-full"
-                >
-                  I already have one
-                </Link>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between gap-3 border-[3px] border-ink bg-paper-3 p-3">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.12em]">
-              {saved ? "Pinned to your board" : "Not tonight? Pin it"}
-            </p>
-            <SaveGigForm gigId={gig.id} saved={saved} next={`/gigs/${gig.id}`} />
-          </div>
-
-          <div className="border-[3px] border-ink bg-ink p-5 text-paper-2">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-marigold">
-              The GIGwire pledge
-            </p>
-            <ul className="mt-3 space-y-2.5 text-[14.5px] leading-snug">
-              {[
-                "The pay number on the flyer is the pay number.",
-                "Rooms must reply — unanswered slots expire after 14 days.",
-                "Zero commission. Cancelled inside 48 hours means half the money.",
-              ].map((line) => (
-                <li key={line} className="flex gap-2">
-                  <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-butter" />
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ApplyRail
+            gigId={gig.id}
+            venueName={venue?.name ?? "the room"}
+            ownerId={venue?.ownerId ?? null}
+            status={gig.status}
+            appCount={appCount}
+          />
         </aside>
       </div>
 
@@ -442,59 +257,14 @@ export default async function GigPage({
             </div>
             <div className="mt-8 grid gap-6 md:grid-cols-3">
               {related.map((row) => (
-                <GigCard key={row.gig.id} row={row} saved={user ? savedIds.includes(row.gig.id) : false} />
+                <GigCard key={row.gig.id} row={row} />
               ))}
             </div>
           </div>
         </section>
       ) : null}
 
-      {venueApps.length ? (
-        <section className="border-t-[4px] border-ink bg-ink px-4 py-14 text-paper-2 md:px-8">
-          <div className="mx-auto max-w-[1240px]">
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] uppercase">
-              {venueApps.length} one-sheet{venueApps.length === 1 ? "" : "s"} for this night
-            </h2>
-            <div className="mt-8 grid gap-5 md:grid-cols-2">
-              {venueApps.map((a) => (
-                <div key={a.application.id} className="paper-grain border-[3px] border-paper-2 bg-ink p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-heavy text-[17px] uppercase">{a.musician?.name}</p>
-                      <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-marigold">
-                        {a.musician?.headline ?? "Player"} · {a.musician?.city ?? "—"}
-                      </p>
-                    </div>
-                    <span className="border-2 border-paper-2 px-2 py-0.5 font-mono text-[10px] uppercase">
-                      {a.application.status}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-[15px] leading-snug text-paper-3">{a.application.pitch}</p>
-                  <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.1em]">
-                    {a.application.lineup}
-                    {a.application.links ? ` · ${a.application.links}` : ""}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {(["accepted", "viewed", "declined"] as const).map((s) => (
-                      <form key={s} action={`/api/applications/${a.application.id}`} method="post">
-                        <input type="hidden" name="status" value={s} />
-                        <input type="hidden" name="next" value={`/gigs/${gig.id}`} />
-                        <button
-                          className={`border-2 border-paper-2 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition hover:bg-marigold hover:text-ink ${
-                            a.application.status === s ? "bg-paper-2 text-ink" : "text-paper-2"
-                          }`}
-                        >
-                          {s === "accepted" ? "Book them" : s === "viewed" ? "Mark read" : "Pass"}
-                        </button>
-                      </form>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
+      <OwnerApplications gigId={gig.id} ownerId={venue?.ownerId ?? null} />
     </div>
   );
 }

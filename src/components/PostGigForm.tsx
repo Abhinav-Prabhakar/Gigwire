@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GENRES, LINEUP, formatGigDate, formatPay, relativeDay, timeRange } from "@/lib/format";
+import { postGig } from "@/lib/demo/store";
 import { Chip } from "@/components/ui";
 
 type State = {
@@ -42,7 +43,7 @@ export function PostGigForm({ venueName, defaults }: { venueName: string; defaul
     gigDate: "",
     startTime: "9:00 PM",
     endTime: "12:00 AM",
-    payAmount: "300",
+    payAmount: "12000",
     payUnit: "flat",
     payNote: "",
     setsCount: "2",
@@ -102,28 +103,37 @@ export function PostGigForm({ venueName, defaults }: { venueName: string; defaul
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/gigs", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          ...s,
-          genres: s.genres.join(","),
-          lineupNeeded: s.lineupNeeded.join(","),
-          backline: s.backline ? "on" : "",
-          meals: s.meals ? "on" : "",
-          tips: s.tips ? "on" : "",
-          soundEngineer: s.soundEngineer ? "on" : "",
-        }),
+      const result = postGig({
+        title: s.title,
+        gigDate: s.gigDate,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        payAmount: Number.parseInt(s.payAmount || "0", 10),
+        payUnit: s.payUnit,
+        payNote: s.payNote,
+        setsCount: Number.parseInt(s.setsCount || "2", 10),
+        spots: Number.parseInt(s.spots || "1", 10),
+        gigType: s.gigType,
+        experience: s.experience,
+        genres: s.genres,
+        lineupNeeded: s.lineupNeeded,
+        description: s.description,
+        requirements: s.requirements,
+        address: s.address,
+        city: s.city,
+        state: s.state,
+        backline: s.backline,
+        meals: s.meals,
+        tips: s.tips,
+        soundEngineer: s.soundEngineer,
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json.ok) {
-        setError(json.error ?? "Something went sideways. Check the highlighted fields.");
+      if (!result.ok) {
+        setError(result.error ?? "Something went sideways. Check the highlighted fields.");
         return;
       }
-      router.push(json.redirect ?? "/dashboard");
-      router.refresh();
+      router.push("/dashboard");
     } catch {
-      setError("Network hiccup — the flyer wasn't posted.");
+      setError("Something went sideways — the flyer wasn't posted.");
     } finally {
       setBusy(false);
     }
@@ -192,7 +202,7 @@ export function PostGigForm({ venueName, defaults }: { venueName: string; defaul
 
         <Section n="02" title="The money">
           <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Amount (USD)">
+            <Field label="Amount (₹)">
               <input type="number" min={0} step={10} value={s.payAmount} onChange={(e) => set("payAmount", e.target.value)} className="field !text-[19px]" required />
             </Field>
             <Field label="Paid as">
@@ -292,13 +302,13 @@ export function PostGigForm({ venueName, defaults }: { venueName: string; defaul
           </label>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <Field label="Address">
-              <input value={s.address} onChange={(e) => set("address", e.target.value)} className="field" placeholder={defaults.address ?? "1187 Peralta St"} />
+              <input value={s.address} onChange={(e) => set("address", e.target.value)} className="field" placeholder={defaults.address ?? "12 Rampart Row, Kala Ghoda"} />
             </Field>
             <Field label="City">
-              <input value={s.city} onChange={(e) => set("city", e.target.value)} className="field" placeholder={defaults.city ?? "Oakland"} />
+              <input value={s.city} onChange={(e) => set("city", e.target.value)} className="field" placeholder={defaults.city ?? "Mumbai"} />
             </Field>
             <Field label="State">
-              <input value={s.state} onChange={(e) => set("state", e.target.value)} className="field" placeholder={defaults.state ?? "CA"} />
+              <input value={s.state} onChange={(e) => set("state", e.target.value)} className="field" placeholder={defaults.state ?? "MH"} />
             </Field>
           </div>
         </Section>
