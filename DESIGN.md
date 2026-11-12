@@ -162,7 +162,7 @@ Loaded from Google Fonts in `src/app/layout.tsx`. Declared as Tailwind theme tok
 | Page | Layout |
 | --- | --- |
 | Home | Full-bleed collage hero → marquee → alternating paper/ink/cobalt sections → CTA slab → footer |
-| Gig board | Dark title band → `lg:grid-cols-[290px_1fr]` filter + results |
+| Gig board | Ink scoreboard header → 290px clipboard rail + date-strip toolbar → flyer grid |
 | Gig detail | Plum hero → `lg:grid-cols-[1fr_380px]` flyer + sticky apply rail |
 | Rooms | Orange halftone hero → marquee → `md:grid-cols-2` venue cards |
 | Dashboard | Ink hero with stat strip → `lg:grid-cols-[1.15fr_0.85fr]` nights + pile |
@@ -327,6 +327,55 @@ Variants:
 - Cards lift on hover: `hover:-translate-y-1 hover:shadow-hard-lg`, 200ms.
 - Featured cards on the home cobalt band rotate at `md:` only; below that they stay square so they never clip the viewport.
 
+### Flyer card — the gig board
+
+The board does not reuse the generic gig card. It uses a taller flyer with a date spine, tape and a perforated pay stub (`src/components/FlyerCard.tsx`).
+
+```
+┌──────────┬─────────────────────────────────┐
+│ SUN      │ THE KALA GHODA ROOM    [tape]   │
+│ 15       │ Friday Night House Trio —       │
+│ NOV      │ keys, bass, drums               │
+│          │ MUMBAI, MH · 9:00 PM – 12:30 AM │
+│ [TYPE]   │ 2 one-sheets in                 │
+├────────────────────────────────────────────┤
+│ [JAZZ] [SOUL / FUNK] [TRIO] [4 SLOTS]      │
+│ Two-line description…                      │
+│ BACKLINE   MEAL   TIPS   ENGINEER          │
+│ - - - - - - - - - - - - - - - - - - -      │
+│ ₹18,000   flat · 3 sets        [save]      │
+└────────────────────────────────────────────┘
+```
+
+- The date spine is a 74px marigold column with a 3px ink right border. It stretches with the header, and the night type sits at its foot as a small rotated stamp.
+- A butter tape strip sits at `-top-3 left-6`, rotated −2°. It is decoration and must not cover the venue line.
+- The relative-date sticker overlaps the top-right corner on every breakpoint. Status replaces the date when the night is `interviewing`, `filled` or `closed`.
+- The meta row carries city, time and applicant count; it may wrap to two lines on a ~280px card.
+- The footer is a pay stub: 2px dashed top rule, two 8px ink rivets, and a paper-3/80 surface. Pay is Anton 24px moss; the unit label never repeats the amount suffix.
+- The only button in the stub is the 36px bookmark. The whole flyer is clickable through the title's `after:inset-0` overlay; do not add a second arrow button — at ~280px it forces the stub onto two rows.
+- Cards lift on hover and the title underlines in tomato.
+
+### Board clipboard — filters
+
+The 290px left rail is a physical clipboard: paper-2, 3px ink border, 5px shadow, a tape strip over the top edge and a serif aside under the title.
+
+- Sections are collapsible rows (`FilterSection`). The label is mono 10px; a black count badge appears only when that section has an active filter; the toggle is a display-font `+` / `–`.
+- Selected controls always use a **solid ink or brand surface with a safe text colour**, never an outline-only state:
+  - City → `cobalt` surface, `paper-2` text (6.8).
+  - Genre → `marigold` surface, `ink` text (9.5).
+  - Lineup / night type / date / sort → `ink` surface, `paper-2` text (16.6).
+  - Room offers → `moss` surface, `paper-2` text (5.1).
+- City and lineup controls are buttons with `aria-pressed`; they apply instantly by rewriting the URL. The search field is the only form that submits on Enter.
+- Pay floor is a range control: 0–₹40,000 in ₹1,000 steps, with a 12px square track, marigold fill, a 24px square thumb and four quick stamps (`Any`, `₹5k+`, `₹10k+`, `₹20k+`). It commits on pointer-up or arrow key, not on every pixel of drag.
+- The rail scrolls inside itself on short viewports (`lg:max-h-[calc(100vh-7rem)]`); keep the top tape visible with `lg:pt-3`.
+- "Open nights by city" is a dot meter, not a bar chart — counts tie constantly, and dots read correctly when they do.
+
+### Board toolbar — date strip + sort
+
+- `Free from` is a seven-day strip of 44px tickets (weekday, Anton day, month). The first ticket reads `TODAY`. Selected is ink/paper; unselected is paper-2 with a butter hover.
+- Sort is three icon stamps: `Featured` (star), `Soonest` (clock), `Top pay` (cash). Selected is ink/paper.
+- The results count is Anton 34px followed by mono `NIGHTS ON THE WALL`. Active filters are ink chips with a tomato `✕`; `clear all` and `reset` are ink text over a 2px tomato underline.
+
 ### Date block — `<DateBlock>`
 
 `74px` wide, 3px ink border, marigold (or paper-3/sky), weekday + day + month stacked. Weekday/month are mono 10px tracked; the day is Anton 30px. Used on cards, dashboard nights and the gig hero.
@@ -463,7 +512,7 @@ Lineup: Solo act, Duo, Trio, 4-piece band, 5+ piece band, Horns, Singer, Pianist
 | --- | --- | --- |
 | Header nav | horizontal scroll chips, no wrap | inline links |
 | Hero collage | stacked; photos below copy | absolute polaroid collage |
-| Gig filters | collapsed behind a **Filters** button | 290px sticky rail |
+| Gig filters | collapsed behind a **Filters** button; date strip scrolls sideways | 290px sticky clipboard rail |
 | Gig grid | 1 column | 2 at `md`, 3 at `xl` |
 | Gig detail | single column, rail after flyer | 2 columns, sticky rail |
 | Dashboard | stacked nights → pile | 2 columns |

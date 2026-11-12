@@ -8,7 +8,7 @@ import type {
   GigRow,
 } from "./types";
 
-export { BASE_DATASET } from "./seed";
+export { BASE_DATASET, BUILD_DAY, day } from "./seed";
 export type {
   AppRow,
   Dataset,
@@ -87,10 +87,10 @@ export function getGig(data: Dataset, id: number): GigRow | null {
   return withCounts(data, [gig])[0];
 }
 
-export function getCities(data: Dataset) {
+export function getCities(data: Dataset, statuses: string[] = ["open", "interviewing"]) {
   const map = new Map<string, { city: string; state: string; count: number }>();
   for (const g of data.gigs) {
-    if (!["open", "interviewing"].includes(g.status) || !g.city) continue;
+    if (!statuses.includes(g.status) || !g.city) continue;
     const row = map.get(g.city) ?? { city: g.city, state: g.state ?? "", count: 0 };
     row.count += 1;
     map.set(g.city, row);

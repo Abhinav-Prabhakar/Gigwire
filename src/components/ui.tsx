@@ -257,6 +257,24 @@ export function IconCheck({ className = "h-4 w-4" }) {
     </svg>
   );
 }
+export function IconSearch({ className = "h-4 w-4" }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...iconProps}>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m15.5 15.5 4.5 4.5" />
+    </svg>
+  );
+}
+export function IconFader({ className = "h-4 w-4" }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...iconProps}>
+      <path d="M5 4v16M12 4v16M19 4v16" />
+      <rect x="2.5" y="7" width="5" height="4" />
+      <rect x="9.5" y="13" width="5" height="4" />
+      <rect x="16.5" y="6" width="5" height="4" />
+    </svg>
+  );
+}
 export function IconDisc({ className = "h-4 w-4" }) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...iconProps}>

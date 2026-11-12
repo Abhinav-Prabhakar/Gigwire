@@ -22,19 +22,36 @@ export default function GigsPage() {
 function BoardSkeleton() {
   return (
     <div>
-      <section className="relative border-b-[4px] border-ink bg-ink px-4 py-10 text-paper-2 md:px-8">
+      <section className="relative border-b-[4px] border-ink bg-ink px-4 pb-0 pt-10 text-paper-2 md:px-8">
         <div aria-hidden className="absolute inset-0 halftone text-paper-2 opacity-[0.14]" />
         <div className="relative mx-auto max-w-[1240px]">
-          <Eyebrow className="!text-marigold">Open board</Eyebrow>
-          <h1 className="mt-3 text-[clamp(2.6rem,7vw,5rem)] uppercase leading-[0.85]">The gig board</h1>
-          <p className="mt-3 font-serif text-[19px] italic text-paper-3">Pinning the notices up…</p>
+          <div className="flex flex-wrap items-start justify-between gap-8">
+            <div>
+              <Eyebrow className="!text-marigold">Open board</Eyebrow>
+              <h1 className="mt-3 text-[clamp(2.6rem,7vw,5rem)] uppercase leading-[0.85]">The gig board</h1>
+              <p className="mt-3 font-serif text-[19px] italic text-paper-3">Pinning the notices up…</p>
+            </div>
+            <div className="grid w-full grid-cols-3 border-[3px] border-paper-2/50 sm:w-auto">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className={`px-4 py-3 ${i < 2 ? "border-r-[3px] border-paper-2/50" : ""}`}>
+                  <div className="h-7 w-12 bg-paper-2/20" />
+                  <div className="mt-2 h-2 w-10 bg-paper-2/20" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-8 h-[42px] border-t-[3px] border-paper-2/30 pt-4" />
         </div>
       </section>
-      <div className="mx-auto max-w-[1240px] px-4 py-10 md:px-8">
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-72 animate-pulse border-[3px] border-ink bg-paper-3/60" />
-          ))}
+      <div className="mx-auto grid max-w-[1240px] gap-8 px-4 py-10 md:px-8 lg:grid-cols-[290px_1fr]">
+        <div className="hidden h-[420px] border-[3px] border-ink bg-paper-2 lg:block" />
+        <div>
+          <div className="h-20 border-b-[3px] border-ink" />
+          <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-72 animate-pulse border-[3px] border-ink bg-paper-3/60" />
+            ))}
+          </div>
         </div>
       </div>
     </div>
