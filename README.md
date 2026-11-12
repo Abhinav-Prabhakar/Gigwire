@@ -145,6 +145,13 @@ GITHUB_PAGES=1 npm run build
 npx serve out
 ```
 
+Deploy it — Pages serves the **`main` branch `/docs`** folder, so there is no workflow to wait for:
+
+```bash
+./scripts/build-docs.sh          # build + sync out/ into docs/
+git add docs && git commit -m "Deploy" && git push
+```
+
 Regenerate the brand assets and screenshots:
 
 ```bash
